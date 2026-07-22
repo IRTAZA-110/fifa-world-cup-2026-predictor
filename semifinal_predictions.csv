@@ -1,0 +1,3 @@
+team_a,team_b,win_prob_a_elo,p_a_advance_poisson,p_b_advance_poisson,expected_goals_a,expected_goals_b,most_likely_score
+France,Spain,0.47715471249819824,0.5098217184200938,0.4901782815799063,1.4742000000000002,1.4408333333333334,1-1
+England,Argentina,0.39024014383454403,0.40203985248187324,0.5979601475181269,1.287,1.6225,1-1

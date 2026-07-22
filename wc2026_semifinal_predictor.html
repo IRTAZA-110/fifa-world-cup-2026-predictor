@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 Semifinal Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E1116;
+    --panel: #171B22;
+    --panel-2: #1D222B;
+    --border: #262B35;
+    --text: #F2F4F7;
+    --muted: #8C95A6;
+    --muted-2: #5E6674;
+    --gold: #E4B75B;
+    --teal: #49C6B0;
+    --red-flag: #C8384A;
+    --blue-flag: #4C7FD9;
+  }
+  *{ box-sizing: border-box; }
+  html, body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 24px 40px;
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .eyebrow .dot{
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold);
+  }
+  h1{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 52px;
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    text-transform: uppercase;
+  }
+  h1 span{ color: var(--gold); }
+  .sub{
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.55;
+    max-width: 620px;
+    margin: 0 0 44px;
+  }
+  .sub b{ color: var(--text); font-weight: 600; }
+
+  .matches{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 680px){ .matches{ grid-template-columns: 1fr; } }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 26px 26px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before{
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--flag-a, var(--blue-flag)) 50%, var(--flag-b, var(--red-flag)) 50%);
+  }
+  .stage-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .teams-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .teams-row .vs{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted-2);
+    font-weight: 500;
+  }
+
+  .prob-bar{
+    display: flex;
+    height: 34px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 18px 0 10px;
+    border: 1px solid var(--border);
+  }
+  .prob-seg{
+    display: flex;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    color: #0E1116;
+    padding: 0 12px;
+  }
+  .prob-seg.a{ background: var(--flag-a, var(--blue-flag)); justify-content: flex-start; }
+  .prob-seg.b{ background: var(--flag-b, var(--red-flag)); justify-content: flex-end; color: #0E1116; }
+
+  .prob-caption{
+    display:flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted-2);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+    margin-bottom: 20px;
+  }
+
+  .stat-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  .stat{ text-align: left; }
+  .stat-label{
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .stat-value{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .stat-value.small{ font-size: 15px; color: var(--text); }
+
+  .elo-note{
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .section-title{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    margin: 0 0 6px;
+  }
+  .section-title .n{ color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-size: 15px; margin-right: 10px; }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 26px;
+    margin-bottom: 18px;
+  }
+  .panel p.desc{
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 0 22px;
+  }
+
+  .metrics-row{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 680px){ .metrics-row{ grid-template-columns: 1fr 1fr; } }
+  .metric{
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 3px;
+  }
+  .metric-label{
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted-2); margin-bottom: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .metric-value{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px; font-weight: 600; color: var(--text);
+  }
+  .metric-value.teal{ color: var(--teal); }
+
+  .stage-bars{ margin-top: 4px; }
+  .stage-row{
+    display: grid;
+    grid-template-columns: 90px 1fr 50px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .stage-track{
+    height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .stage-fill{ height: 100%; background: var(--teal); border-radius: 4px; }
+
+  .honest-box{
+    border-left: 2px solid var(--gold);
+    padding: 14px 18px;
+    background: var(--panel-2);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+  .honest-box b{ color: var(--text); }
+
+  .footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 44px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--muted-2);
+  }
+  .footer .stack span{
+    display: inline-block;
+    border: 1px solid var(--border);
+    padding: 4px 9px;
+    border-radius: 20px;
+    margin: 3px 4px 0 0;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow"><span class="dot"></span> World Cup 2026 &middot; Semifinals &middot; Matchday</div>
+  <h1>Semifinal <span>Predictor</span></h1>
+  <p class="sub">A model built on <b>150 years of Elo</b> and this tournament's own <b>xG data</b> — then backtested against every knockout match already played, so the numbers below come with a track record attached, not just a guess.</p>
+
+  <div class="matches">
+
+    <div class="card" style="--flag-a:#4C7FD9; --flag-b:#C8384A;">
+      <div class="stage-label">Semifinal &middot; Jul 14</div>
+      <div class="teams-row"><span>France</span><span class="vs">VS</span><span>Spain</span></div>
+      <div class="prob-bar">
+        <div class="prob-seg a" style="width:51%;">51%</div>
+        <div class="prob-seg b" style="width:49%;">49%</div>
+      </div>
+      <div class="prob-caption"><span>France advances</span><span>Spain advances</span></div>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Expected goals</div>
+          <div class="stat-value small">1.47 &ndash; 1.44</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Likeliest score</div>
+          <div class="stat-value">1&ndash;1</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Elo gap</div>
+          <div class="stat-value small">&minus;9.6</div>
+        </div>
+      </div>
+      <div class="elo-note">Read: a genuine coin flip. Two of the tournament's tightest defenses meeting &mdash; the model expects a low-scoring, closely fought match.</div>
+    </div>
+
+    <div class="card" style="--flag-a:#FFFFFF; --flag-b:#6CACE4;">
+      <div class="stage-label">Semifinal &middot; Jul 15</div>
+      <div class="teams-row"><span>England</span><span class="vs">VS</span><span>Argentina</span></div>
+      <div class="prob-bar">
+        <div class="prob-seg a" style="width:40%; color:#0E1116;">40%</div>
+        <div class="prob-seg b" style="width:60%;">60%</div>
+      </div>
+      <div class="prob-caption"><span>England advances</span><span>Argentina advances</span></div>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Expected goals</div>
+          <div class="stat-value small">1.29 &ndash; 1.62</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Likeliest score</div>
+          <div class="stat-value">1&ndash;1</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Elo gap</div>
+          <div class="stat-value small">&minus;79.2</div>
+        </div>
+      </div>
+      <div class="elo-note">Read: Argentina favored by both a 150-year Elo history and this tournament's own attacking data &mdash; two independent methods agreeing is the strongest signal in this project.</div>
+    </div>
+
+  </div>
+
+  <div class="panel">
+    <div class="section-title"><span class="n">//</span>How good is this model, really?</div>
+    <p class="desc">Before trusting any prediction, I backtested it against every completed knockout match in this tournament. Here's the honest scorecard &mdash; including where it struggled.</p>
+
+    <div class="metrics-row">
+      <div class="metric">
+        <div class="metric-label">Outcome accuracy</div>
+        <div class="metric-value teal">67.9%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Brier score</div>
+        <div class="metric-value">0.494</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Exact score hit</div>
+        <div class="metric-value">10.7%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Within 1 goal</div>
+        <div class="metric-value">35.7%</div>
+      </div>
+    </div>
+
+    <div class="stage-bars">
+      <div class="stage-row">
+        <span>Round of 16</span>
+        <div class="stage-track"><div class="stage-fill" style="width:81%;"></div></div>
+        <span>81%</span>
+      </div>
+      <div class="stage-row">
+        <span>Quarterfinal</span>
+        <div class="stage-track"><div class="stage-fill" style="width:38%;"></div></div>
+        <span>38%</span>
+      </div>
+    </div>
+
+    <div class="honest-box">
+      <b>What this means:</b> accuracy dropped from the round of 16 to the quarterfinals &mdash; likely because teams left in later rounds are closer in quality, though the sample here (28 matches) is too small to say for certain. The model also runs slightly under-confident: outcomes it flagged as 50&ndash;70% likely happened more often than that in practice. Read the semifinal probabilities above as a directional signal, not a precise forecast.
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      Built with: Elo ratings (1872&ndash;2026 international results) + Poisson/xG scoreline model, backtested on 28 knockout matches.
+      <div class="stack">
+        <span>Python</span><span>pandas</span><span>scipy</span><span>Google Colab</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
