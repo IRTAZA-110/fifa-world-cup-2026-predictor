@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+.ipynb_checkpoints/
+.kaggle/
+kaggle.json
+*.zip
+wc2026_kaggle/
+.env
+.DS_Store
